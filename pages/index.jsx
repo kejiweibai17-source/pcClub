@@ -18,8 +18,6 @@ import {
  */
 
 const LINE_URL = "https://lin.ee/CBEfgA3";
-const PHONE_DISPLAY = "0925-018-770";
-const PHONE_TEL = "tel:+886925018770";
 
 const COURTS = ["A", "B"];
 const WEEKDAYS = ["日", "一", "二", "三", "四", "五", "六"];
@@ -234,7 +232,6 @@ export default function TestPickleballPage() {
   const [viewMonth, setViewMonth] = useState(now.getMonth() + 1);
   const [payload, setPayload] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [tick, setTick] = useState(() => new Date());
   const [popupDate, setPopupDate] = useState(null);
   const [popupCourt, setPopupCourt] = useState("A");
@@ -255,7 +252,6 @@ export default function TestPickleballPage() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    setError("");
     try {
       const data = await fetchPickleballSchedule({
         year: viewYear,
@@ -263,8 +259,8 @@ export default function TestPickleballPage() {
       });
       setPayload(data);
       setTick(new Date());
-    } catch (e) {
-      setError(e?.message || "載入失敗");
+    } catch {
+      // 錯誤不顯示於頁面（例如缺少當月分頁）
     } finally {
       setLoading(false);
     }
@@ -466,8 +462,6 @@ export default function TestPickleballPage() {
             />
           </div>
 
-          {error ? <p className="text-sm text-red-500 mb-4">{error}</p> : null}
-
           {/* Calendar card（Amelia month calendar） */}
           <section
             className="rounded-none bg-white border overflow-hidden"
@@ -636,7 +630,7 @@ export default function TestPickleballPage() {
           >
             <p className="text-sm text-[#5B6B7C] leading-relaxed">
               上方日曆為球場預約狀態參考。若要預約或確認空場，請透過 LINE
-              或電話聯繫。
+              聯繫。
             </p>
             <div className="mt-4 flex flex-col sm:flex-row items-center justify-center gap-2.5">
               <a
@@ -647,13 +641,6 @@ export default function TestPickleballPage() {
                 style={{ background: "#06C755" }}
               >
                 官方 LINE 預約
-              </a>
-              <a
-                href={PHONE_TEL}
-                className="w-full sm:w-auto inline-flex items-center justify-center rounded-none px-5 py-3 text-sm font-bold border"
-                style={{ borderColor: AM.border, color: AM.primaryText }}
-              >
-                {PHONE_DISPLAY}
               </a>
             </div>
           </div>
@@ -895,12 +882,6 @@ export default function TestPickleballPage() {
                           : `${popupCourt} 場當日已無可約時段，可切換另一場`}
                       </p>
                     )}
-                    <a
-                      href={PHONE_TEL}
-                      className="inline-flex w-full items-center justify-center rounded-none px-4 py-2.5 text-sm font-bold text-[#5B6B7C]"
-                    >
-                      電話 {PHONE_DISPLAY}
-                    </a>
                   </div>
                 </div>
               </motion.div>
