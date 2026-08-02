@@ -21,7 +21,6 @@ const LINE_URL = "https://lin.ee/CBEfgA3";
 
 const COURTS = ["A", "B"];
 const WEEKDAYS = ["日", "一", "二", "三", "四", "五", "六"];
-const FORWARD_MONTHS = 11;
 /** 每個可選時段長度（分鐘）— 整點 1 小時 */
 const SLOT_DURATION = 60;
 /** 時段起始間隔（分鐘）— 僅整點，無半點 */
@@ -135,11 +134,6 @@ function maskName(name) {
   return `${s[0]}${"○".repeat(Math.min(2, s.length - 2))}${s[s.length - 1]}`;
 }
 
-function shiftMonth(year, month1to12, delta) {
-  const d = new Date(year, month1to12 - 1 + delta, 1);
-  return { year: d.getFullYear(), month: d.getMonth() + 1 };
-}
-
 function monthLabel(year, month) {
   return `${year}年 ${month}月`;
 }
@@ -205,31 +199,17 @@ function summarizeDay(bookingsByCourt, dateStr, now = new Date()) {
   };
 }
 
-function Chevron({ dir = "left" }) {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      className={dir === "right" ? "rotate-180" : ""}
-      aria-hidden
-    >
-      <path
-        d="M15 6l-6 6 6 6"
-        stroke="currentColor"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 export default function TestPickleballPage() {
   const now = useMemo(() => new Date(), []);
-  const [viewYear, setViewYear] = useState(now.getFullYear());
-  const [viewMonth, setViewMonth] = useState(now.getMonth() + 1);
+  /** 僅顯示當月（Asia/Taipei） */
+  const viewYear = useMemo(() => {
+    const [y] = todayDateStrTaipei(now).split("-").map(Number);
+    return y;
+  }, [now]);
+  const viewMonth = useMemo(() => {
+    const [, m] = todayDateStrTaipei(now).split("-").map(Number);
+    return m;
+  }, [now]);
   const [payload, setPayload] = useState(null);
   const [loading, setLoading] = useState(true);
   const [tick, setTick] = useState(() => new Date());
@@ -239,16 +219,6 @@ export default function TestPickleballPage() {
   /** 日曆篩選（可複選） */
   const [filterAvailable, setFilterAvailable] = useState(true);
   const [filterFull, setFilterFull] = useState(true);
-
-  const baseYear = now.getFullYear();
-  const baseMonth = now.getMonth() + 1;
-  const minM = { year: baseYear, month: baseMonth };
-  const maxM = shiftMonth(baseYear, baseMonth, FORWARD_MONTHS);
-
-  const canPrev =
-    viewYear > minM.year || (viewYear === minM.year && viewMonth > minM.month);
-  const canNext =
-    viewYear < maxM.year || (viewYear === maxM.year && viewMonth < maxM.month);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -313,17 +283,6 @@ export default function TestPickleballPage() {
     () => buildMonthGrid(viewYear, viewMonth),
     [viewYear, viewMonth],
   );
-
-  const goMonth = (delta) => {
-    const next = shiftMonth(viewYear, viewMonth, delta);
-    setViewYear(next.year);
-    setViewMonth(next.month);
-  };
-
-  const goToday = () => {
-    setViewYear(baseYear);
-    setViewMonth(baseMonth);
-  };
 
   const openDayPopup = (date) => {
     if (date < todayStr) return;
@@ -470,42 +429,14 @@ export default function TestPickleballPage() {
               boxShadow: "0 10px 40px rgba(31,42,55,0.07)",
             }}
           >
-            {/* Month toolbar */}
+            {/* Month toolbar — 僅當月 */}
             <div
-              className="flex items-center justify-between gap-2 px-3 sm:px-5 py-3.5 border-b"
+              className="flex items-center justify-center gap-2 px-3 sm:px-5 py-3.5 border-b"
               style={{ borderColor: AM.border }}
             >
-              <button
-                type="button"
-                disabled={!canPrev}
-                onClick={() => goMonth(-1)}
-                className="w-10 h-10 rounded-none flex items-center justify-center text-[#5B6B7C] hover:bg-[#F4F7FB] disabled:opacity-25"
-                aria-label="上月"
-              >
-                <Chevron dir="left" />
-              </button>
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg sm:text-xl font-extrabold text-[#1F2A37] tabular-nums">
-                  {monthLabel(viewYear, viewMonth)}
-                </h2>
-                <button
-                  type="button"
-                  onClick={goToday}
-                  className="hidden sm:inline-flex text-xs font-bold px-2.5 py-1 rounded-none"
-                  style={{ background: AM.primarySoft, color: AM.primaryText }}
-                >
-                  今天
-                </button>
-              </div>
-              <button
-                type="button"
-                disabled={!canNext}
-                onClick={() => goMonth(1)}
-                className="w-10 h-10 rounded-none flex items-center justify-center text-[#5B6B7C] hover:bg-[#F4F7FB] disabled:opacity-25"
-                aria-label="下月"
-              >
-                <Chevron dir="right" />
-              </button>
+              <h2 className="text-lg sm:text-xl font-extrabold text-[#1F2A37] tabular-nums">
+                {monthLabel(viewYear, viewMonth)}
+              </h2>
             </div>
 
             <div className="p-3 sm:p-5">
