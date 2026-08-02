@@ -17,7 +17,7 @@ import {
  * - 淺底白卡、藍主色、月曆格選取態、時段列表卡片、圓角 CTA
  */
 
-const LINE_URL = process.env.NEXT_PUBLIC_LINE_OA_URL || "https://lin.ee/CBEfgA3";
+const LINE_URL = "https://lin.ee/CBEfgA3";
 const PHONE_DISPLAY = "0925-018-770";
 const PHONE_TEL = "tel:+886925018770";
 
