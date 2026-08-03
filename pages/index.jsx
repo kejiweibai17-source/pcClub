@@ -18,6 +18,8 @@ import {
  */
 
 const LINE_URL = "https://lin.ee/CBEfgA3";
+/** LINE 官方帳號 Basic ID（供 oaMessage 預填預約文字） */
+const LINE_OA_ID = "@134njeez";
 
 const COURTS = ["A", "B"];
 const WEEKDAYS = ["日", "一", "二", "三", "四", "五", "六"];
@@ -172,6 +174,12 @@ function formatLongDate(dateStr) {
   const [y, m, d] = dateStr.split("-").map(Number);
   const dt = new Date(y, m - 1, d);
   return `${y}年${m}月${d}日（${WEEKDAYS[dt.getDay()]}）`;
+}
+
+/** 開啟官方 LINE 對話並預填預約訊息 */
+function buildLineBookingUrl({ date, court, start, end }) {
+  const text = `嗨！我想預約 ${formatLongDate(date)} ${court}場 ${start}–${end} 時段`;
+  return `https://line.me/R/oaMessage/${encodeURIComponent(LINE_OA_ID)}/?${encodeURIComponent(text)}`;
 }
 
 function buildMonthGrid(year, month) {
@@ -890,7 +898,12 @@ export default function TestPickleballPage() {
                           {selectedSlot.end}
                         </p>
                         <a
-                          href={LINE_URL}
+                          href={buildLineBookingUrl({
+                            date: popupDate,
+                            court: popupCourt,
+                            start: selectedSlot.start,
+                            end: selectedSlot.end,
+                          })}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex w-full items-center justify-center rounded-none px-4 py-3.5 text-sm font-extrabold text-white"
