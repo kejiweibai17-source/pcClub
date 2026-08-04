@@ -27,8 +27,8 @@ const WEEKDAYS = ["日", "一", "二", "三", "四", "五", "六"];
 const BOOKING_WINDOW_DAYS = 30;
 /** 每個可選時段長度（分鐘）— 1 小時 */
 const SLOT_DURATION = 60;
-/** 時段起始間隔（分鐘）— 含半點（:00 / :30） */
-const SLOT_STEP = 30;
+/** 時段起始間隔（分鐘）— 僅整點 */
+const SLOT_STEP = 60;
 
 /** Amelia-like tokens */
 const AM = {
@@ -59,7 +59,7 @@ function parseHm(hm) {
   return parseHmToMinutes(hm);
 }
 
-/** 營業時段內全部可選 1 小時格（每半小時起始：06:00、06:30…） */
+/** 營業時段內全部可選 1 小時格（僅整點起始：06:00、07:00…） */
 function buildAllDaySlots() {
   const slots = [];
   for (
@@ -84,7 +84,7 @@ const ALL_DAY_SLOTS = buildAllDaySlots();
 /**
  * Amelia 風格衝突：服務時長佔用場地整段時間；
  * 候選格只要與已預約區間有交集 → 不可預約。
- * 例：已約 09:30–10:30 → 09:00–10:00、09:30–10:30、10:00–11:00 皆不可約。
+ * 例：已約 09:00–10:00 → 09:00–10:00 不可約；緊接的 10:00–11:00 可約。
  */
 function rangesOverlap(aStart, aEnd, bStart, bEnd) {
   return aStart < bEnd && bStart < aEnd;
@@ -494,7 +494,7 @@ export default function TestPickleballPage() {
                 <p className="mt-2 text-sm text-[#8B96A5] leading-relaxed">
                   營業 {PICKLEBALL_VENUE.openLabel}–
                   {PICKLEBALL_VENUE.closeLabel}
-                  （半點可約、時長 1 小時）· 可約今日起 {BOOKING_WINDOW_DAYS}{" "}
+                  （整點 1 小時）· 可約今日起 {BOOKING_WINDOW_DAYS}{" "}
                   天內 · A／B 兩場
                 </p>
               </div>
@@ -757,7 +757,7 @@ export default function TestPickleballPage() {
                           <span className="mx-1">·</span>
                           每格 1 小時
                           <span className="mx-1">·</span>
-                          半點可約
+                          整點起始
                         </p>
                       </div>
                       <button
